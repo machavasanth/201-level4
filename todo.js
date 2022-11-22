@@ -1,55 +1,53 @@
-/* eslint-disable no-undef */
-const todoList = require("../todo");
-const { all, markAsComplete, add, overdue, dueToday, dueLater } = todoList();
+const todoList = () => {
+  let all = [];
+  const formattedDate = (d) => {
+    return d.toISOString().split("T")[0];
+  };
 
-describe("Todo List Test Suite", () => {
-  beforeAll(() => {
-    const today = new Date();
-    const oneDay = 86400000;
-    [
-      {
-        title: "Prepare for Exam",
-        completed: false,
-        dueDate: new Date(today.getTime() - oneDay).toLocaleDateString("en-CA"),
-      },
-      {
-        title: "Pay rent",
-        completed: false,
-        dueDate: new Date().toLocaleDateString("en-CA"),
-      },
-      {
-        title: "Submit assignment",
-        completed: false,
-        dueDate: new Date(today.getTime() + oneDay).toLocaleDateString("en-CA"),
-      },
-    ].forEach(add);
-  });
-  test("checks creating a new todo", () => {
-    expect(all.length).toEqual(3);
-    add({
-      title: "Go Buy Bred",
-      completed: false,
-      dueDate: new Date().toLocaleDateString("en-CA"),
+  var dateToday = new Date();
+  const today = formattedDate(dateToday);
+
+  const add = (todoItem) => {
+    all.push(todoItem);
+  };
+  const markAsComplete = (index) => {
+    all[index].completed = true;
+  };
+
+  const overdue = () => {
+    let overdue_list = all.filter((item) => item.dueDate < today);
+    return overdue_list;
+  };
+
+  const dueToday = () => {
+    let dueToday_list = all.filter((item) => item.dueDate === today);
+    return dueToday_list;
+  };
+
+  const dueLater = () => {
+    let dueLater_list = all.filter((item) => item.dueDate > today);
+    return dueLater_list;
+  };
+
+  const toDisplayableList = (list) => {
+    let display_list = list.map((item) => {
+      let completionStatus = item.completed ? "[x]": "[ ]";
+      let displayedDate = item.dueDate === today ? "" : item.dueDate;
+      return `${completionStatus} ${item.title} ${displayedDate}`.trim();
     });
+    let output_string = display_list.join("\n");
+    return output_string;
+  };
 
-    expect(all.length).toEqual(4);
-  });
+  return {
+    all,
+    add,
+    markAsComplete,
+    overdue,
+    dueToday,
+    dueLater,
+    toDisplayableList,
+  };
+};
 
-  test("checks marking a todo as completed", () => {
-    expect(all[0].completed).toEqual(false);
-    markAsComplete(0);
-    expect(all[0].completed).toEqual(true);
-  });
-
-  test("checks retrieval of overdue items", () => {
-    expect(overdue().length).toEqual(1);
-  });
-
-  test("checks retrieval of due today items", () => {
-    expect(dueToday().length).toEqual(2);
-  });
-
-  test("checks retrieval of due later items", () => {
-    expect(dueLater().length).toEqual(1);
-  });
-});
+module.exports = todoList;
